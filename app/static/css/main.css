@@ -1,0 +1,72 @@
+@import url('fonts.css');
+
+body {
+    background: #fff;
+    color: black;
+    margin: 0;
+    padding: 0 ;
+}
+/* #71805B цвет сайта */
+.header {
+    position: sticky;
+    top:0;
+    padding: 20px;
+    background-color: #212529 !important;
+}
+
+.page {
+    overflow-x:hidden;
+    display:flex;
+    flex-direction:column;
+    min-height:100vh;
+}
+
+.content {
+    max-width: 1500px;
+    margin:0 auto;
+    padding: 40px 20px;
+    flex: 1 1 auto;
+    background: #fff;
+}
+
+h1 {
+    font-family: Montserrat, sans-serif;
+    font-weight: 400;
+}
+
+.header__img {
+    display: block;
+    width: 45px;
+    height: 45px;
+
+}
+
+/* Стили для футера */
+.custom-footer {
+    background-color: #212529 !important;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.custom-footer .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.custom-footer .nav-link:hover {
+    color: white !important;
+}
+
+.custom-footer .text-center {
+    color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.custom-footer .border-bottom {
+    border-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Убираем лишние отступы у body и html */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}

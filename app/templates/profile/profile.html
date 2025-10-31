@@ -1,0 +1,21 @@
+{% extends 'main/base.html' %}
+
+{% block title %} Профиль {{ user.username }} {% endblock%}
+
+
+{% block content %}
+
+    {{ user.username }}
+    {{ user.email }}
+    {{ user.full_name }}
+    {{ user.university }}
+    {{ user.role.name }}
+
+    <br>
+    {% for note in notes %}
+
+        {{ note.title }}<br>
+
+    {% endfor%}
+
+{% endblock %}

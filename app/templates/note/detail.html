@@ -1,0 +1,387 @@
+{% extends 'main/base.html' %}
+
+{% block title %} {{ note.title }} {% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/libs/font-awesome.min.css') }}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+    .note-container {
+        max-width: 1500px !important;
+        width: 1500px !important;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .note-content-wrapper {
+        background: white;
+        border-radius: 8px;
+        padding: 2.5rem;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f0f0f0;
+        margin-bottom: 2rem;
+        min-width: 1500px;
+        width: 1500px !important;
+        box-sizing: border-box; /* Добавляем чтобы padding не увеличивал ширину */
+    }
+
+    .note-title {
+        color: #212529;
+        font-size: 1.8rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        line-height: 1.3;
+    }
+
+    .note-meta-line {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e9ecef;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .meta-icon {
+        color: #6c757d;
+        font-size: 1rem;
+        width: 16px;
+        text-align: center;
+    }
+
+    .meta-value {
+        color: #495057;
+        font-weight: 400;
+        font-size: 0.9rem;
+    }
+
+    .note-content {
+        line-height: 1.7;
+        font-size: 16px;
+        color: #2d3748;
+        min-height: 400px;
+        width: 100%;
+        max-width: 100%; /* Ограничиваем ширину контента */
+        overflow-wrap: break-word; /* Перенос длинных слов */
+        word-wrap: break-word;
+        box-sizing: border-box; /* Учитываем padding в ширине */
+    }
+
+    /* Стили для контента Quill - исправляем вылезание за края */
+    .note-content * {
+        max-width: 100% !important; /* Запрещаем любым элементам вылезать за границы */
+    }
+
+    .note-content img,
+    .note-content video,
+    .note-content iframe {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+
+    .note-content table {
+        max-width: 100% !important;
+        width: auto !important;
+        overflow-x: auto;
+        display: block;
+    }
+
+    .note-content h1, .note-content h2, .note-content h3 {
+        color: #212529;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 600;
+        max-width: 100% !important;
+    }
+
+    .note-content h1 { font-size: 1.8rem; }
+    .note-content h2 { font-size: 1.5rem; }
+    .note-content h3 { font-size: 1.3rem; }
+
+    .note-content p {
+        margin-bottom: 1.2rem;
+        max-width: 100% !important;
+    }
+
+    .note-content ul, .note-content ol {
+        margin-bottom: 1.2rem;
+        padding-left: 2rem;
+        max-width: 100% !important;
+    }
+
+    .note-content li {
+        margin-bottom: 0.5rem;
+        max-width: 100% !important;
+    }
+
+    .note-content blockquote {
+        border-left: 3px solid #e9ecef;
+        padding-left: 1rem;
+        margin: 1.5rem 0;
+        color: #6c757d;
+        font-style: italic;
+        max-width: 100% !important;
+    }
+
+    .note-content pre {
+        background: #f8f9fa;
+        color: #212529;
+        padding: 1rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        margin: 1.5rem 0;
+        font-size: 14px;
+        border: 1px solid #e9ecef;
+        max-width: 100% !important;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .note-content code {
+        background: #f8f9fa;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #e83e8c;
+        border: 1px solid #e9ecef;
+        max-width: 100% !important;
+    }
+
+    .note-content pre code {
+        background: none;
+        padding: 0;
+        color: inherit;
+        border: none;
+        max-width: 100% !important;
+    }
+
+    .note-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        padding-top: 2rem;
+        margin-top: 2rem;
+        border-top: 1px solid #e9ecef; /* Добавляем линию сверху */
+    }
+
+    /* Увеличиваем кнопки */
+    .note-actions .btn {
+        padding: 10px 16px !important; /* Увеличиваем отступы */
+        font-size: 1rem !important; /* Увеличиваем шрифт */
+        min-width: 50px; /* Минимальная ширина */
+        height: 40px; /* Фиксированная высота */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .note-actions .btn-sm {
+        padding: 10px 16px !important; /* Переопределяем .btn-sm */
+        font-size: 1rem !important;
+    }
+
+    .note-actions .fa {
+        font-size: 1.5rem !important; /* Увеличиваем иконки */
+    }
+
+    /* Гарантируем фиксированную ширину */
+    .note-content-wrapper,
+    .note-content {
+<!--        min-width: 1500px !important;-->
+<!--        width: 1500px !important;-->
+        max-width: 1500px !important;
+        box-sizing: border-box; /* Важно: учитываем padding в общей ширине */
+    }
+
+    /* Убираем любые ограничения по ширине из родительских контейнеров */
+    .container {
+        max-width: none !important;
+        width: auto !important;
+    }
+
+    .content {
+        max-width: none !important;
+        width: auto !important;
+    }
+
+    /* Дополнительная защита от вылезания контента */
+    .ql-editor {
+        max-width: 100% !important;
+    }
+
+    .ql-editor * {
+        max-width: 100% !important;
+    }
+
+
+        /* Стили для кнопок с border при наведении */
+    .note-actions .btn {
+        padding: 12px 16px !important;
+        font-size: 1rem !important;
+        min-width: 50px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid transparent !important;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+
+       /* Кнопка редактирования */
+    .note-actions .butn-secondary {
+<!--        background: #6c757d !important;-->
+        color: white !important;
+<!--        border-color: #6c757d !important;-->
+    }
+
+    .note-actions .butn-secondary:hover {
+<!--        background: #5a6268 !important;-->
+<!--        border-color: #545b62 !important;-->
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+    }
+
+    /* Кнопка удаления */
+    .note-actions .butn-danger {
+<!--        background: #dc3545 !important;-->
+        color: white !important;
+<!--        border-color: #dc3545 !important;-->
+    }
+
+    .note-actions .butn-danger:hover {
+<!--        background: #c82333 !important;-->
+<!--        border-color: #bd2130 !important;-->
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(220, 53, 69, 0.3);
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="note-container">
+    <div class="note-content-wrapper">
+        <!-- Заголовок -->
+        <h1 class="note-title">{{ note.title }}</h1>
+
+        <!-- Мета-информация в строчку -->
+        <div class="note-meta-line">
+            <!-- Предмет -->
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="fa fa-book"></i>
+                </div>
+                <div class="meta-value">{{ note.subject }}</div>
+            </div>
+
+            <!-- Преподаватель -->
+            {% if note.teacher %}
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="fa fa-graduation-cap"></i>
+                </div>
+                <div class="meta-value">{{ note.teacher }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Автор -->
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="fa fa-user-circle-o"></i>
+                </div>
+                <div class="meta-value">{{ note.author.username }}</div>
+            </div>
+
+            <!-- Университет -->
+            {% if note.author.university %}
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="fa fa-university"></i>
+                </div>
+                <div class="meta-value">{{ note.author.university }}</div>
+            </div>
+            {% endif %}
+
+            <!-- Дата создания -->
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="fa fa-calendar"></i>
+                </div>
+                <div class="meta-value">{{ note.created_at.strftime('%d.%m.%Y в %H:%M') }}</div>
+            </div>
+
+            <!-- Дата обновления -->
+            <div class="meta-item">
+                <div class="meta-icon">
+                    <i class="fa fa-edit"></i>
+                </div>
+                <div class="meta-value">{{ note.updated_at.strftime('%d.%m.%Y в %H:%M') }}</div>
+            </div>
+        </div>
+
+        <!-- Контент конспекта -->
+        <div class="note-content">
+            {{ note.content|safe }}
+        </div>
+
+        <!-- Кнопки действий (только для автора/админа) -->
+        {% if current_user.is_authenticated %}
+            {% if current_user.id == note.author.id or current_user.is_admin %}
+                <div class="note-actions">
+                    <a href="{{ url_for('note.update_note', id=note.id) }}" class="btn btn-sm butn-secondary">
+                        <i class="fa fa-pencil-square-o"></i>
+                    </a>
+                    <a href="{{ url_for('note.delete_note', id=note.id) }}" class="btn btn-sm butn-danger"
+                       onclick="return confirm('Вы уверены, что хотите удалить этот конспект?')">
+                        <i class="fa fa-trash-o"></i>
+                    </a>
+                </div>
+            {% elif current_user.id == note.author.id or current_user.is_teacher %}
+                <div class="note-actions">
+                    <a href="{{ url_for('note.update_note', id=note.id) }}" class="btn btn-sm butn-secondary">
+                        <i class="fa fa-pencil-square-o"></i>
+                    </a>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- Подключение highlight.js для подсветки кода -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Подсвечиваем все блоки кода
+        document.querySelectorAll('pre code').forEach(function(block) {
+            hljs.highlightElement(block);
+        });
+
+        // Дополнительная защита: принудительно ограничиваем ширину всех элементов контента
+        const noteContent = document.querySelector('.note-content');
+        if (noteContent) {
+            const allElements = noteContent.querySelectorAll('*');
+            allElements.forEach(el => {
+                el.style.maxWidth = '100%';
+                if (el.scrollWidth > el.clientWidth) {
+                    el.style.overflowX = 'auto';
+                }
+            });
+        }
+    });
+</script>
+
+{% endblock %}

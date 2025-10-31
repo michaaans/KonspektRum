@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>КонспектРум · {% block title%} {% endblock%}</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/libs/bootstrap.min.css') }}">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+        <link rel="icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+        {% block style %} {% endblock %}
+
+    </head>
+    <body>
+
+        <div class="page">
+            <header class="header">
+                {% include 'main/_header.html' %}
+            </header>
+
+            <main class="content">
+                {% include 'main/_flash.html' %}
+                {% block content%} {% endblock%}
+            </main>
+            <footer class="py-3 my-4 custom-footer">
+                {% include 'main/_footer.html' %}
+            </footer>
+        </div>
+
+
+        <script src="{{ url_for('static', filename='js/libs/bootstrap.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/libs/bootstrap.bundle.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+        <!-- Initialize Quill editor -->
+        <script>
+          const quill = new Quill('#editor', {
+            modules: {
+              syntax: true,
+              toolbar: '#toolbar-container',
+            },
+            placeholder: 'Compose an epic...',
+            theme: 'snow',
+          });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Автоматическое закрытие через 5 секунд
+                const alerts = document.querySelectorAll('.alert[data-bs-auto-close]');
+
+                alerts.forEach(function(alert) {
+                    const timeout = alert.getAttribute('data-bs-auto-close');
+
+                    setTimeout(function() {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    }, timeout);
+                });
+
+                // Также закрытие по клику в любое место сообщения
+                const alertElements = document.querySelectorAll('.alert');
+                alertElements.forEach(function(alert) {
+                    alert.addEventListener('click', function() {
+                        const bsAlert = new bootstrap.Alert(alert);
+                        bsAlert.close();
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>

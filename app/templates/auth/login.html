@@ -1,0 +1,192 @@
+{% extends 'main/base.html' %}
+
+{% block title %} Вход в систему {% endblock%}
+
+{% block style %}
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/libs/font-awesome.min.css') }}">
+
+<style>
+    .login-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        margin: 2rem 0;
+        width:500px;
+    }
+
+    .login-header {
+        background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+        border-bottom: none;
+        padding: 1.5rem 2rem;
+    }
+
+    .login-body {
+        padding: 2rem;
+        background: #fff;
+    }
+
+    .form-control {
+        border-radius: 6px;
+        border: 1.5px solid #dee2e6;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #212529;
+        box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 6px;
+        font-size: 13px;
+    }
+
+    .btn-login {
+        background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+        border: none;
+        border-radius: 6px;
+        padding: 10px;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.2s ease;
+        color: white !important;
+    }
+
+    .btn-login:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(33, 37, 41, 0.25);
+        color: white !important;
+    }
+
+    .section-title {
+        color: #212529;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 0.8rem;
+        padding-bottom: 0.3rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    .register-link {
+        color: #212529;
+        font-weight: 600;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .register-link:hover {
+        color: #495057;
+        text-decoration: underline;
+    }
+
+    .invalid-feedback {
+        font-size: 11px;
+        margin-top: 3px;
+    }
+
+    /* Стили для чекбокса */
+    .form-check-input:checked {
+        background-color: #212529;
+        border-color: #212529;
+    }
+
+    .form-check-input:focus {
+        border-color: #212529;
+        box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.25);
+    }
+
+    .form-check-label {
+        font-size: 13px;
+        color: #495057;
+        font-weight: 500;
+    }
+
+    .compact-form .mb-3 {
+        margin-bottom: 1rem !important;
+    }
+
+    .compact-form .mb-4 {
+        margin-bottom: 1.2rem !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-12 col-lg-10 col-xl-12">
+            <div class="card login-card">
+                <div class="card-header login-header text-center">
+                    <h3 class="text-white mb-0">
+                        <i class="bi bi-person-check me-2"></i>Вход в систему
+                    </h3>
+                    <p class="text-light mb-0 mt-2 opacity-75">Войдите в свой аккаунт · КонспектРум</p>
+                </div>
+
+                <div class="card-body login-body">
+                    <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                        {{ form.hidden_tag() }}
+
+                        <!-- Данные для входа -->
+                        <div class="mb-4">
+                            <h6 class="section-title">Данные для входа</h6>
+
+                            <div class="mb-3">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.username.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control", placeholder="Введите ваш пароль") }}
+                                {% if form.password.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {% for error in form.password.errors %}
+                                            {{ error }}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Чекбокс "Запомнить меня" -->
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    {{ form.remember_me(class="form-check-input") }}
+                                    {{ form.remember_me.label(class="form-check-label") }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Кнопка входа -->
+                        <div class="d-grid gap-2 mt-4">
+                            {{ form.submit(class="btn btn-login btn-lg") }}
+                        </div>
+                    </form>
+
+                    <!-- Ссылка на регистрацию -->
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="mb-0 text-muted">
+                            Нет аккаунта?
+                            <a href="{{ url_for('auth.registration') }}" class="register-link">Зарегистрироваться</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock%}

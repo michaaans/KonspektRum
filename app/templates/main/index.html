@@ -1,0 +1,331 @@
+{% extends 'main/base.html' %}
+
+{% block title %} Главная страница {% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/libs/font-awesome.min.css') }}">
+<style>
+    .notes-container {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 0 20px;
+        width: 1500px !important;
+
+
+    .notes-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 3rem;
+    }
+
+    .note-card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .note-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .note-title {
+        color: #212529;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.2rem;
+        line-height: 1.4;
+    }
+
+    .note-meta-line {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-bottom: 1.2rem;
+        padding-bottom: 1.2rem;
+        border-bottom: 1px solid #e9ecef;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .meta-icon {
+        color: #6c757d;
+        font-size: 0.9rem;
+        width: 16px;
+        text-align: center;
+    }
+
+    .meta-value {
+        color: #495057;
+        font-weight: 400;
+    }
+
+    .note-preview {
+        color: #6c757d;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0;
+    }
+
+    /* Пагинация в одну строку */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 3rem 0;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item {
+        display: flex;
+    }
+
+    .page-link {
+        padding: 10px 16px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #495057;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        min-width: 44px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .page-link:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+        text-decoration: none;
+        color: #495057;
+    }
+
+    .page-current {
+        background: #212529;
+        color: white !important;
+        border-color: #212529;
+    }
+
+    .page-disabled {
+        color: #6c757d !important;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .page-disabled:hover {
+        background: transparent !important;
+        border-color: #dee2e6 !important;
+    }
+
+    .page-ellipsis {
+        padding: 10px 8px;
+        color: #6c757d;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+
+    .empty-state-btn {
+    color: #212529 !important;
+    transition: all 0.3s ease;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.empty-state-btn:hover {
+    color: #343a40 !important;
+    transform: scale(1.1);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+}
+.empty-state .fa-plus-square-o:hover {
+    color: #343a40 !important;
+    transform: scale(1.1);
+}
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .notes-container {
+            padding: 0 15px;
+        }
+
+        .note-card {
+            padding: 1.5rem;
+        }
+
+        .note-meta-line {
+            gap: 1rem;
+        }
+
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="notes-container">
+    {% if notes %}
+        <div class="notes-list">
+            {% for note in notes %}
+                <a href="{{ url_for('note.note_id', id=note.id) }}" class="note-card">
+                    <!-- Заголовок конспекта -->
+                    <h3 class="note-title">{{ note.title }}</h3>
+
+                    <!-- Мета-информация в строчку -->
+                    <div class="note-meta-line">
+                        <!-- Предмет -->
+                        <div class="meta-item">
+                            <div class="meta-icon">
+                                <span class="fa fa-book"></span>
+                            </div>
+                            <div class="meta-value">{{ note.subject }}</div>
+                        </div>
+
+                        <!-- Преподаватель -->
+                        {% if note.teacher %}
+                        <div class="meta-item">
+                            <div class="meta-icon">
+                                <span class="fa fa-graduation-cap"></span>
+                            </div>
+                            <div class="meta-value">{{ note.teacher }}</div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Автор -->
+                        <div class="meta-item">
+                            <div class="meta-icon">
+                                <span class="fa fa-user-circle"></span>
+                            </div>
+                            <div class="meta-value">{{ note.author.username }}</div>
+                        </div>
+
+                        <div class="meta-item">
+                            <div class="meta-icon">
+                                <span class="fa fa-university"></span>
+                            </div>
+                            <div class="meta-value">{{ note.author.university }}</div>
+                        </div>
+
+                        <!-- Дата создания -->
+                        <div class="meta-item">
+                            <div class="meta-icon">
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                            <div class="meta-value">{{ note.created_at.strftime('%d.%m.%Y в %H:%M') }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Превью контента -->
+                    <p class="note-preview">
+                        {{ note.content | striptags | truncate(150) }}
+                    </p>
+                </a>
+            {% endfor %}
+        </div>
+
+        <!-- Пагинация -->
+        {% if pagination.pages > 1 %}
+        <div class="pagination-wrapper">
+            <ul class="pagination">
+                <!-- Кнопка "Назад" -->
+                <li class="page-item">
+                    {% if pagination.has_prev %}
+                        <a href="{{ url_for('main.index', page=pagination.prev_num) }}" class="page-link">
+                            &lt;
+                        </a>
+                    {% else %}
+                        <span class="page-link page-disabled">&lt;</span>
+                    {% endif %}
+                </li>
+
+                <!-- Номера страниц -->
+                {% for page_num in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                            <li class="page-item">
+                                <span class="page-link page-current">{{ page_num }}</span>
+                            </li>
+                        {% else %}
+                            <li class="page-item">
+                                <a href="{{ url_for('main.index', page=page_num) }}" class="page-link">{{ page_num }}</a>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item">
+                            <span class="page-link page-ellipsis">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Кнопка "Вперед" -->
+                <li class="page-item">
+                    {% if pagination.has_next %}
+                        <a href="{{ url_for('main.index', page=pagination.next_num) }}" class="page-link">
+                            &gt;
+                        </a>
+                    {% else %}
+                        <span class="page-link page-disabled">&gt;</span>
+                    {% endif %}
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+
+    {% else %}
+        <!-- Состояние когда конспектов нет -->
+        <div class="empty-state">
+
+            {% if current_user.is_authenticated %}
+                <h3 class="mb-4" style="color: #212529; font-weight: 500;">Будьте первым, кто создаст конспект!</h3>
+                <a href="{{ url_for('note.create_note') }}" class="btn btn-link p-0 border-0">
+                    <i class="fa fa-plus-square-o fa-3x empty-state-btn"></i>
+                </a>
+            {% else %}
+                <h3 class="mb-4" style="color: #212529; font-weight: 500;">Авторизуйтесь для создания конспектов </h3>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+
+
+{% endblock %}

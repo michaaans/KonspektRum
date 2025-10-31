@@ -1,0 +1,323 @@
+{% extends 'main/base.html' %}
+
+{% block title %} Создание конспекта {% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/libs/font-awesome.min.css') }}">
+<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+
+<style>
+    .create-note-container {
+        max-width: 1500px !important;
+        width: 1500px !important;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    .create-note-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        margin: 2rem 0;
+        width: 100%;
+    }
+
+    .create-note-header {
+        background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+        border-bottom: none;
+        padding: 1.5rem 2rem;
+    }
+
+    .create-note-body {
+        padding: 2rem;
+        background: #fff;
+    }
+
+    .form-control {
+        border-radius: 6px;
+        border: 1.5px solid #dee2e6;
+        padding: 10px 12px;
+        font-size: 14px;
+        transition: all 0.2s ease;
+    }
+
+    .form-control:focus {
+        border-color: #212529;
+        box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15);
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 6px;
+        font-size: 13px;
+    }
+
+    .btn-create {
+        background: linear-gradient(135deg, #212529 0%, #343a40 100%);
+        border: none;
+        border-radius: 6px;
+        padding: 12px;
+        font-weight: 600;
+        font-size: 15px;
+        transition: all 0.2s ease;
+        color: white !important;
+    }
+
+    .btn-create:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(33, 37, 41, 0.25);
+        color: white !important;
+    }
+
+    .invalid-feedback {
+        font-size: 11px;
+        margin-top: 3px;
+    }
+
+    /* Стили для Quill редактора */
+    .ql-container {
+        border-bottom-left-radius: 6px;
+        border-bottom-right-radius: 6px;
+        font-size: 14px;
+        height: 200px !important; /* Фиксированная высота */
+        min-height: 200px !important;
+    }
+
+    .ql-toolbar {
+        border-top-left-radius: 6px;
+        border-top-right-radius: 6px;
+        background: #f8f9fa;
+    }
+
+    .ql-editor {
+        min-height: 180px !important;
+        height: 100% !important;
+    }
+
+    .editor-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .editor-label {
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 13px;
+    }
+
+    .section-title {
+        color: #212529;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+
+    /* Переопределяем стандартные стили Quill для высоты */
+    #editor {
+        height: 650px !important;
+        min-height: 200px !important;
+    }
+
+    /* Убеждаемся, что контейнер редактора имеет правильную высоту */
+    .ql-container.ql-snow {
+        height: 200px !important;
+        min-height: 200px !important;
+    }
+
+    /* Переопределяем возможные конфликты из main.css */
+    .content {
+        max-width: none !important; /* Отменяем ограничение из main.css */
+        padding: 20px 0 !important; /* Корректируем отступы */
+    }
+
+    /* Гарантируем, что контейнер имеет правильную ширину */
+    .container {
+        max-width: 1500px !important;
+        width: 100% !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="create-note-container">
+    <div class="card create-note-card">
+        <div class="card-header create-note-header text-center">
+            <h3 class="text-white mb-0">
+                <i class="bi bi-file-earmark-plus me-2"></i>Создать конспект
+            </h3>
+            <p class="text-light mb-0 mt-2 opacity-75">Заполните информацию о конспекте</p>
+        </div>
+
+        <div class="card-body create-note-body">
+            <form method="POST" action="{{ url_for('note.create_note') }}" id="noteForm" novalidate>
+                {{ form.hidden_tag() }}
+
+                <!-- Основная информация -->
+                <div class="mb-4">
+                    <h6 class="section-title">Основная информация</h6>
+
+                    <div class="mb-3">
+                        {{ form.title.label(class="form-label") }}
+                        {{ form.title(class="form-control") }}
+                        {% if form.title.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.title.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.subject.label(class="form-label") }}
+                            {{ form.subject(class="form-control") }}
+                            {% if form.subject.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.subject.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.teacher.label(class="form-label") }}
+                            {{ form.teacher(class="form-control") }}
+                            {% if form.teacher.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {% for error in form.teacher.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Контент конспекта -->
+                <div class="mb-4">
+                    <h6 class="section-title">Содержание конспекта</h6>
+
+                    <div class="editor-container">
+                        <label class="editor-label">Контент конспекта *</label>
+                        <div id="toolbar-container">
+                            <span class="ql-formats">
+                                <select class="ql-font"></select>
+                                <select class="ql-size"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-bold"></button>
+                                <button class="ql-italic"></button>
+                                <button class="ql-underline"></button>
+                                <button class="ql-strike"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <select class="ql-color"></select>
+                                <select class="ql-background"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-script" value="sub"></button>
+                                <button class="ql-script" value="super"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-header" value="1"></button>
+                                <button class="ql-header" value="2"></button>
+                                <button class="ql-blockquote"></button>
+                                <button class="ql-code-block"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-list" value="ordered"></button>
+                                <button class="ql-list" value="bullet"></button>
+                                <button class="ql-indent" value="-1"></button>
+                                <button class="ql-indent" value="+1"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-direction" value="rtl"></button>
+                                <select class="ql-align"></select>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-link"></button>
+                                <button class="ql-image"></button>
+                                <button class="ql-video"></button>
+                                <button class="ql-formula"></button>
+                            </span>
+                            <span class="ql-formats">
+                                <button class="ql-clean"></button>
+                            </span>
+                        </div>
+                        <div id="editor">
+
+                        </div>
+                        {{ form.content(id="content-field") }}
+                        {% if form.content.errors %}
+                            <div class="invalid-feedback d-block">
+                                {% for error in form.content.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Кнопка создания -->
+                <div class="text-center mt-4">
+                    {{ form.submit(class="btn btn-create btn-lg") }}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Инициализация Quill редактора с фиксированной высотой
+    const quill = new Quill('#editor', {
+        modules: {
+            syntax: true,
+            toolbar: '#toolbar-container'
+        },
+        placeholder: 'Напишите содержание вашего конспекта...',
+        theme: 'snow'
+    });
+
+    // Принудительно устанавливаем высоту после инициализации
+    setTimeout(() => {
+        const editor = document.querySelector('#editor .ql-container');
+        const editorContent = document.querySelector('#editor .ql-editor');
+        if (editor) {
+            editor.style.height = '200px';
+            editor.style.minHeight = '200px';
+        }
+        if (editorContent) {
+            editorContent.style.minHeight = '180px';
+        }
+    }, 100);
+
+    // Обновляем скрытое поле content при отправке формы
+    document.getElementById('noteForm').addEventListener('submit', function(e) {
+        const contentField = document.getElementById('content-field');
+        contentField.value = quill.root.innerHTML;
+
+        // Проверяем, что контент не пустой
+        const textContent = quill.getText().trim();
+        if (textContent === '' || textContent === 'Начните писать ваш конспект здесь...') {
+            e.preventDefault();
+            alert('Пожалуйста, заполните содержание конспекта');
+            return false;
+        }
+    });
+
+    // Инициализация подсветки синтаксиса
+    hljs.highlightAll();
+</script>
+
+{% endblock %}
