@@ -11,12 +11,14 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/auth/registration', methods=['POST', 'GET'])
 def registration():
-
     form = RegistrationForm()
 
     if form.validate_on_submit():
+
+        random_avatar = User.get_random_avatar()
+
         user = User(username=form.username.data, full_name=form.full_name.data,
-                    email=form.email.data, university=form.university.data, role_id=3)
+                    email=form.email.data, university=form.university.data, role_id=3, avatar=random_avatar)
 
         user.set_password(form.password.data)
 

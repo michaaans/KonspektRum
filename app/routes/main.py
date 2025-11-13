@@ -7,35 +7,41 @@ from ..models import Note
 main = Blueprint('main', __name__)
 
 
-@main.route('/', methods=['POST', 'GET'])
+@main.route('/', methods=['GET'])
 def index():
-
-    page = request.args.get('page', 1, type=int)
-
-    notes_pagination = Note.query.order_by(Note.created_at.desc()).paginate(
-        page=page,
-        per_page=20,
-        error_out=False
-    )
-
-    return render_template('main/index.html', notes=notes_pagination.items, pagination=notes_pagination)
-
-
-@main.route('/search', methods=['GET'])
-@login_required
-def search():
 
     query = request.args.get('q', '').strip()
     page = request.args.get('page', 1, type=int)
 
-    if not query:
-        return render_template('main/search.html',
-                               search_notes=[],
-                               search_query='',
-                               pagination=None)
+    total_notes_count = Note.query.count()
 
-    search_query = Note.fulltext_search(query)
+    if query:
 
-    pagination = search_query.paginate(page=page, per_page=20, error_out=False)
+        search_query = Note.fulltext_search(query)
+        notes_pagination = search_query.paginate(page=page, per_page=20, error_out=False)
 
-    return render_template('main/search.html', search_notes=pagination.items, search_query=query, pagination=pagination)
+        is_search = True
+        search_has_results = notes_pagination.total > 0
+
+    else:
+
+        notes_pagination = Note.query.order_by(Note.created_at.desc()).paginate(
+            page=page,
+            per_page=20,
+            error_out=False
+        )
+
+        is_search = False
+        search_has_results = False
+
+    return render_template(
+        'main/index.html',
+        notes=notes_pagination.items,
+        pagination=notes_pagination,
+        search_query=query,
+        total_notes_count=total_notes_count,
+        is_search=is_search,
+        search_has_results=search_has_results
+    )
+
+

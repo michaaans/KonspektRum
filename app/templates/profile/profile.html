@@ -1,21 +1,497 @@
 {% extends 'main/base.html' %}
 
-{% block title %} Профиль {{ user.username }} {% endblock%}
+{% block title %} Профиль {{ user.username }} {% endblock %}
 
+{% block style %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/libs/font-awesome.min.css') }}">
+<style>
+    .profile-container {
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 0 20px;
+        width: 1500px !important;
+    }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: 350px 1fr;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        align-items: start; /* Выравнивание по верху */
+    }
+
+    /* Левая колонка - информация о пользователе */
+    .profile-sidebar {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f0f0f0;
+        height: 532.016px;
+        position: sticky;
+        top: 2rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 1.5rem;
+        display: block;
+        border: 3px solid #f8f9fa;
+    }
+
+    .profile-username {
+        color: #212529;
+        font-size: 1.5rem;
+        font-weight: 600;
+        text-align: left;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-fullname {
+        color: #495057;
+        font-size: 1.1rem;
+        text-align: left;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+
+    .profile-info {
+        margin-bottom: 2rem;
+        flex-grow: 1; /* Растягиваем информацию чтобы кнопка была внизу */
+    }
+
+    .profile-info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 0.8rem;
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .profile-info-icon {
+        color: #6c757d;
+        font-size: 0.9rem;
+        width: 16px;
+        text-align: center;
+    }
+
+    .profile-info-value {
+        color: #495057;
+        font-weight: 400;
+    }
+
+    /* Обновленная кнопка редактирования */
+    .profile-edit-btn {
+        display: block;
+        width: 100%;
+        padding: 12px 20px;
+        background: #212529;
+        color: white !important;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        text-align: center;
+        font-weight: 500;
+        border: none;
+        cursor: pointer;
+    }
+
+    .profile-edit-btn:hover {
+        background: #343a40;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(33, 37, 41, 0.15);
+        color: white !important;
+        text-decoration: none;
+    }
+
+    /* Правая колонка - конспекты пользователя */
+    .profile-notes-section {
+        height: 100%; /* Занимает всю доступную высоту */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .profile-notes {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        flex-grow: 1; /* Растягиваем контейнер с конспектами */
+    }
+
+    .profile-note-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .profile-note-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .profile-note-title {
+        color: #212529;
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .profile-note-meta {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e9ecef;
+        flex-wrap: wrap;
+    }
+
+    .profile-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+
+    .profile-meta-icon {
+        color: #6c757d;
+        font-size: 0.8rem;
+        width: 14px;
+        text-align: center;
+    }
+
+    .profile-meta-value {
+        color: #495057;
+        font-weight: 400;
+    }
+
+    .profile-note-preview {
+        color: #6c757d;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        margin: 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Пагинация */
+    .pagination-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 2rem 0;
+    }
+
+    .pagination {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .page-item {
+        display: flex;
+    }
+
+    .page-link {
+        padding: 8px 14px;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #495057;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+        min-width: 40px;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .page-link:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+        text-decoration: none;
+        color: #495057;
+    }
+
+    .page-current {
+        background: #212529;
+        color: white !important;
+        border-color: #212529;
+    }
+
+    .page-disabled {
+        color: #6c757d !important;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .page-disabled:hover {
+        background: transparent !important;
+        border-color: #dee2e6 !important;
+    }
+
+    .page-ellipsis {
+        padding: 8px 6px;
+        color: #6c757d;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        border: 1px solid #f0f0f0;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+        .profile-container {
+            padding: 0 15px;
+        }
+
+        .profile-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        .profile-sidebar {
+            position: static;
+            text-align: center;
+            height: auto;
+        }
+
+        .profile-notes-section {
+            height: auto;
+        }
+
+        .profile-note-card {
+            padding: 1.2rem;
+        }
+
+        .profile-note-meta {
+            gap: 1rem;
+        }
+
+        .pagination {
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 
-    {{ user.username }}
-    {{ user.email }}
-    {{ user.full_name }}
-    {{ user.university }}
-    {{ user.role.name }}
+<div class="profile-container">
+    <div class="profile-content">
+        <!-- Левая колонка - информация о пользователе -->
+        <div class="profile-sidebar">
+            <!-- Аватар -->
+            <img src="{{ url_for('static', filename='avatars/' + user.avatar) }}"
+                 alt="avatar-{{ user.username }}"
+                 class="profile-avatar"
+                 onerror="this.src='{{ url_for('static', filename='avatars/default.png') }}'">
 
-    <br>
-    {% for note in notes %}
+            <!-- Username и ФИО -->
+            <h1 class="profile-username">{{ user.username }}</h1>
+            {% if user.full_name %}
+            <div class="profile-fullname">{{ user.full_name }}</div>
+            {% endif %}
 
-        {{ note.title }}<br>
+            <!-- Информация о пользователе -->
+            <div class="profile-info">
+                {% if user.university %}
+                <div class="profile-info-item">
+                    <div class="profile-info-icon">
+                        <i class="fa fa-university"></i>
+                    </div>
+                    <div class="profile-info-value">{{ user.university }}</div>
+                </div>
+                {% endif %}
 
-    {% endfor%}
+                <div class="profile-info-item">
+                    <div class="profile-info-icon">
+                        <i class="fa fa-envelope"></i>
+                    </div>
+                    <div class="profile-info-value">{{ user.email }}</div>
+                </div>
+
+                <div class="profile-info-item">
+                    <div class="profile-info-icon">
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                    <div class="profile-info-value">С {{ user.created_at.strftime('%d.%m.%Y') }}</div>
+                </div>
+
+                <div class="profile-info-item">
+                    <div class="profile-info-icon">
+                        <i class="fa fa-file-text-o"></i>
+                    </div>
+                    <div class="profile-info-value">{{ pagination.total }} конспектов</div>
+                </div>
+            </div>
+
+            <!-- Кнопка редактирования (только для текущего пользователя) -->
+            {% if current_user.is_authenticated and current_user.id == user.id or current_user.is_admin %}
+            <a href="{{ url_for('profile.profile_edit', username=user.username) }}" class="profile-edit-btn" title="Редактировать профиль">
+                Редактировать профиль
+            </a>
+            {% endif %}
+        </div>
+
+        <!-- Правая колонка - конспекты пользователя -->
+        <div class="profile-notes-section">
+            {% if notes %}
+                <div class="profile-notes">
+                    {% for note in notes %}
+                        <a href="{{ url_for('note.note_id', id=note.id) }}" class="profile-note-card">
+                            <!-- Заголовок конспекта -->
+                            <h3 class="profile-note-title">{{ note.title }}</h3>
+
+                            <!-- Мета-информация -->
+                            <div class="profile-note-meta">
+                                <!-- Предмет -->
+                                <div class="profile-meta-item">
+                                    <div class="profile-meta-icon">
+                                        <span class="fa fa-book"></span>
+                                    </div>
+                                    <div class="profile-meta-value">{{ note.subject }}</div>
+                                </div>
+
+                                <!-- Преподаватель -->
+                                {% if note.teacher %}
+                                <div class="profile-meta-item">
+                                    <div class="profile-meta-icon">
+                                        <span class="fa fa-graduation-cap"></span>
+                                    </div>
+                                    <div class="profile-meta-value">{{ note.teacher }}</div>
+                                </div>
+                                {% endif %}
+
+                                <!-- Дата создания -->
+                                <div class="profile-meta-item">
+                                    <div class="profile-meta-icon">
+                                        <i class="fa fa-calendar"></i>
+                                    </div>
+                                    <div class="profile-meta-value">{{ note.created_at.strftime('%d.%m.%Y') }}</div>
+                                </div>
+                            </div>
+
+                            <!-- Превью контента -->
+                            <p class="profile-note-preview">
+                                {{ note.content | striptags | truncate(120) }}
+                            </p>
+                        </a>
+                    {% endfor %}
+                </div>
+
+                <!-- Пагинация -->
+                {% if pagination.pages > 1 %}
+                <div class="pagination-wrapper">
+                    <ul class="pagination">
+                        <!-- Кнопка "Назад" -->
+                        <li class="page-item">
+                            {% if pagination.has_prev %}
+                                <a href="{{ url_for('profile.profile_username', username=user.username, page=pagination.prev_num) }}" class="page-link">
+                                    &lt;
+                                </a>
+                            {% else %}
+                                <span class="page-link page-disabled">&lt;</span>
+                            {% endif %}
+                        </li>
+
+                        <!-- Номера страниц -->
+                        {% for page_num in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+                            {% if page_num %}
+                                {% if page_num == pagination.page %}
+                                    <li class="page-item">
+                                        <span class="page-link page-current">{{ page_num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a href="{{ url_for('profile.profile_username', username=user.username, page=page_num) }}" class="page-link">{{ page_num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% else %}
+                                <li class="page-item">
+                                    <span class="page-link page-ellipsis">...</span>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <!-- Кнопка "Вперед" -->
+                        <li class="page-item">
+                            {% if pagination.has_next %}
+                                <a href="{{ url_for('profile.profile_username', username=user.username, page=pagination.next_num) }}" class="page-link">
+                                    &gt;
+                                </a>
+                            {% else %}
+                                <span class="page-link page-disabled">&gt;</span>
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
+
+            {% else %}
+                <!-- Состояние когда у пользователя нет конспектов -->
+                <div class="empty-state">
+                    <i class="fa fa-file-text-o"></i>
+                    <h3 style="color: #212529; font-weight: 500; margin-bottom: 1rem;">
+                        {% if current_user.id == user.id %}
+                            У вас пока нет конспектов
+                        {% else %}
+                            У пользователя пока нет конспектов
+                        {% endif %}
+                    </h3>
+                    {% if current_user.is_authenticated and current_user.id == user.id %}
+                        <p class="text-muted">Создайте свой первый конспект!</p>
+                        <a href="{{ url_for('note.create_note') }}" class="btn btn-primary mt-2">
+                            <i class="fa fa-plus me-2"></i>Создать конспект
+                        </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 
 {% endblock %}

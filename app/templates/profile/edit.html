@@ -1,0 +1,126 @@
+{% extends 'main/base.html' %}
+
+{% block title %}Редактирование профиля {{ user.username }}{% endblock %}
+
+{% block style %}
+<style>
+    .profile-edit-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .form-control:focus {
+        border-color: #212529;
+        box-shadow: 0 0 0 0.2rem rgba(33, 37, 41, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-edit-container">
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h4 class="mb-0"><i class="fa fa-user-edit me-2"></i>Редактирование профиля</h4>
+        </div>
+        <div class="card-body">
+            <!-- Аватар -->
+            <div class="text-center mb-4">
+                <img src="{{ url_for('static', filename='avatars/' + user.avatar) }}"
+                     alt="avatar-{{ user.username }}"
+                     class="rounded-circle"
+                     width="100"
+                     height="100"
+                     onerror="this.src='{{ url_for('static', filename='avatars/default.png') }}'">
+                <p class="text-muted mt-2 small">Для изменения аватара обратитесь к администратору</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('profile.profile_edit', username=user.username) }}">
+                {{ form.hidden_tag() }}
+
+                <!-- Личная информация -->
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2">Личная информация</h6>
+
+                    <div class="mb-3">
+                        {{ form.full_name.label(class="form-label") }}
+                        {{ form.full_name(class="form-control") }}
+                        {% for error in form.full_name.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.username.label(class="form-label") }}
+                            {{ form.username(class="form-control") }}
+                            {% for error in form.username.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form.email.label(class="form-label") }}
+                            {{ form.email(class="form-control") }}
+                            {% for error in form.email.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Учебная информация -->
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2">Учебная информация</h6>
+                    <div class="mb-3">
+                        {{ form.university.label(class="form-label") }}
+                        {{ form.university(class="form-control") }}
+                        {% for error in form.university.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Роль (только для админа) -->
+                {% if current_user.is_admin %}
+                <div class="mb-4">
+                    <h6 class="border-bottom pb-2">Права доступа</h6>
+                    <div class="mb-3">
+                        {{ form.role_id.label(class="form-label") }}
+                        {{ form.role_id(class="form-control") }}
+                        {% for error in form.role_id.errors %}
+                            <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <strong>Список ID ролей:</strong><br>
+                                1 - admin (Администратор)<br>
+                                2 - teacher (Преподаватель)<br>
+                                3 - user (Пользователь)<br>
+                                Текущая роль:
+                                {% if user.role %}
+                                    {{ user.role.name }} (ID: {{ user.role.id }})
+                                {% else %}
+                                    не установлена
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Кнопка сохранения -->
+                <div class="d-grid gap-2 mt-4">
+                    {{ form.submit(class="btn btn-dark btn-lg") }}
+                </div>
+            </form>
+
+            <!-- Ссылка назад -->
+            <div class="text-center mt-4 pt-3 border-top">
+                <a href="{{ url_for('profile.profile_username', username=user.username) }}"
+                   class="text-decoration-none">
+                    ← Вернуться в профиль
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

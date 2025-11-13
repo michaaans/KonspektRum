@@ -6,6 +6,7 @@ from .routes.note import note
 from .routes.main import main
 from .routes.auth import auth
 from .routes.profile import profile
+from .routes.admin import admin
 
 
 def create_app(config_class=Config):
@@ -17,6 +18,7 @@ def create_app(config_class=Config):
     app.register_blueprint(main)
     app.register_blueprint(auth)
     app.register_blueprint(profile)
+    app.register_blueprint(admin)
 
     db.init_app(app)
     migrate.init_app(app, db)

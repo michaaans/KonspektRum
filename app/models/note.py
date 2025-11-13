@@ -28,31 +28,66 @@ class Note(db.Model):
         )
     )
 
+    # @classmethod
+    # def fulltext_search(cls, query):
+    #     """
+    #     Полнотекстовый поиск с поддержкой русского языка
+    #     """
+    #     if not query:
+    #         return cls.query
+    #
+    #     if query.startswith('@'):
+    #         try:
+    #             note_id = int(query[1:])  # Убираем @ и преобразуем в число
+    #             return cls.query.filter(cls.id == note_id)
+    #         except ValueError:
+    #             # Если после @ не число, ищем как обычный текст
+    #             pass
+    #
+    #     # Преобразуем запрос в tsquery
+    #     ts_query = func.plainto_tsquery('russian', query)
+    #
+    #     # Ищем и сортируем по релевантности
+    #     return cls.query.filter(
+    #         cls.search_vector.op('@@')(ts_query)
+    #     ).order_by(
+    #         func.ts_rank(cls.search_vector, ts_query).desc()
+    #     )
+
     @classmethod
     def fulltext_search(cls, query):
-        """
-        Полнотекстовый поиск с поддержкой русского языка
-        """
         if not query:
             return cls.query
 
         if query.startswith('@'):
             try:
-                note_id = int(query[1:])  # Убираем @ и преобразуем в число
+                note_id = int(query[1:])
                 return cls.query.filter(cls.id == note_id)
             except ValueError:
-                # Если после @ не число, ищем как обычный текст
                 pass
 
-        # Преобразуем запрос в tsquery
-        ts_query = func.plainto_tsquery('russian', query)
+        # Разбиваем запрос на слова и ищем любое из них
+        words = query.split()
+        if len(words) > 1:
+            # Для нескольких слов используем OR поиск
+            ts_queries = [func.plainto_tsquery('russian', word) for word in words]
+            combined_query = ts_queries[0]
+            for tsq in ts_queries[1:]:
+                combined_query = combined_query.op('||')(tsq)
 
-        # Ищем и сортируем по релевантности
-        return cls.query.filter(
-            cls.search_vector.op('@@')(ts_query)
-        ).order_by(
-            func.ts_rank(cls.search_vector, ts_query).desc()
-        )
+            return cls.query.filter(
+                cls.search_vector.op('@@')(combined_query)
+            ).order_by(
+                func.ts_rank(cls.search_vector, combined_query).desc()
+            )
+        else:
+            # Для одного слова обычный поиск
+            ts_query = func.plainto_tsquery('russian', query)
+            return cls.query.filter(
+                cls.search_vector.op('@@')(ts_query)
+            ).order_by(
+                func.ts_rank(cls.search_vector, ts_query).desc()
+            )
 
     def __repr__(self):
         return f'<Note {self.title}>'

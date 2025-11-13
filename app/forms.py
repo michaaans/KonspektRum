@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, TextAreaField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, HiddenField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, Regexp, ValidationError
 from .models.user import User
 
@@ -175,3 +175,72 @@ class UpdateNoteForm(FlaskForm):
     submit = SubmitField('Обновить конспект', render_kw={
         "class": "btn btn-primary btn-lg w-100"
     })
+
+
+class ProfileEditForm(FlaskForm):
+    # Личная информация
+    full_name = StringField('ФИО', validators=[
+        DataRequired(message='Поле ФИО обязательно для заполнения'),
+        Length(min=5, max=100, message='ФИО должно быть от 5 до 100 символов')
+    ], render_kw={
+        "class": "form-control",
+        "placeholder": "Иванов Иван Иванович"
+    })
+
+    username = StringField('Имя пользователя', validators=[
+        DataRequired(message='Имя пользователя обязательно для заполнения'),
+        Length(min=3, max=64, message='Имя пользователя должно быть от 3 до 64 символов'),
+        Regexp('^[A-Za-z0-9_]+$', message='Неправильно указан логин')
+    ], render_kw={
+        "class": "form-control",
+        "placeholder": "_username228_",
+        "pattern": "[A-Za-z0-9_]+",
+        "title": "Только английские буквы, цифры и символ _"
+    })
+
+    email = StringField('Email', validators=[
+        DataRequired(message='Email обязателен'),
+        Email(message='Введите корректный email адрес'),
+        Length(max=120, message='Email не должен превышать 120 символов')
+    ], render_kw={
+        "class": "form-control",
+        "placeholder": "example@email.com",
+        "type": "email"
+    })
+
+    # Учебная информация
+    university = StringField('ВУЗ', validators=[
+        DataRequired(message='Название ВУЗа обязательно'),
+        Length(min=2, max=100, message='Название ВУЗа должно быть от 2 до 100 символов')
+    ], render_kw={
+        "class": "form-control",
+        "placeholder": "ВлГУ им. А.Г. и Н.Г. Столетовых"
+    })
+
+    # Роль - простое текстовое поле для ID (только для админа)
+    role_id = StringField('ID Роли', validators=[
+        Regexp('^[1-3]$', message='ID роли должен быть от 1 до 3')
+    ], render_kw={
+        "class": "form-control",
+        "placeholder": "1 - admin, 2 - teacher, 3 - user"
+    })
+
+    submit = SubmitField('Сохранить изменения', render_kw={
+        "class": "btn btn-primary w-100"
+    })
+
+    def __init__(self, *args, **kwargs):
+        self.editing_user = kwargs.pop('editing_user', None)
+        super(ProfileEditForm, self).__init__(*args, **kwargs)
+
+    def validate_username(self, username):
+        if self.editing_user:
+            user = User.query.filter_by(username=username.data).first()
+            if user and user.id != self.editing_user.id:
+                raise ValidationError('Это имя пользователя уже занято. Выберите другое.')
+
+    def validate_email(self, email):
+        if self.editing_user:
+            user = User.query.filter_by(email=email.data).first()
+            if user and user.id != self.editing_user.id:
+                raise ValidationError('Этот email уже зарегистрирован. Используйте другой.')

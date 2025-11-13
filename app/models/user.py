@@ -1,3 +1,4 @@
+import random
 
 from datetime import datetime
 from flask_login import UserMixin
@@ -20,6 +21,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(200))
     full_name = db.Column(db.String(100)) # ФИО
     university = db.Column(db.String(100)) # ВУЗ
+    avatar = db.Column(db.String(50), default='avatar_1.png') # аватарка
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -50,4 +52,7 @@ class User(UserMixin, db.Model):
     def is_admin(self):
         return self.role.name == "admin"
 
-
+    @staticmethod
+    def get_random_avatar():
+        avatar_number = random.randint(1, 6)
+        return f'avatar_{avatar_number}.png'
